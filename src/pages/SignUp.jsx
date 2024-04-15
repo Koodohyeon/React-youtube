@@ -1,29 +1,42 @@
 import React, { useState } from "react";
-import { loginWithGithyb, logout, register } from '../api/firebase';
+import { loginWithGithub, register} from '../api/firebase';
 import { uploadImage } from "../api/cloudinary";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function SignUp() {
   const [userInfo, setUserInfo] = useState({email:'', password:'', name:'', photo:''});
-  const [file, setfile] = useState();
-  const [user, setUser] = useState();
+  const [file, setFile] = useState();
+  const navigate = useNavigate();
   const handleChange = e => {
     setUserInfo({...userInfo, [e.target.name]: e.target.value});
   }
   const handleSubmit = e => {
     e.preventDefault();
-    register(userInfo).then(setUser);
+    register(userInfo);
+    navigate('/signIn');
   }
   const handleGithub = e => {
-    loginWithGithyb().then(setUser);
-  }
-  const handleLogout = e => {
-    logout().then(setUser);
+    loginWithGithub();
+    navigate(-1);
   }
   const handleUpload = e => {
-    setfile(e.target.files && e.target.files[0]);
-    uploadImage(file)
+    setFile(e.target.files[0]);
+    uploadImage(e.target.files[0])
       .then(url => setUserInfo({...userInfo, ['photo']: url}));
   }
+  // const handleLogout = () => {
+  //   logout().then(setUser);
+  // }
+
+  // const handleUpload = e => {
+  //   setfile(e.target.files && e.target.files[0]);
+  //   uploadImage(file)
+  //     .then(url => setUserInfo({...userInfo, ['photo']: url}));
+  // }
+
+  // const handleLogin = () => {
+  //   login(userInfo).then(setUser);
+  // }
   // .then = 결과를 불러올때 사용하는 것
 
   return (
@@ -33,17 +46,15 @@ export default function SignUp() {
           onChange={handleChange} /><br />
         <input type="password" name='password' value={userInfo.password} placeholder="패스워드"
           onChange={handleChange} /><br />  
+        <input type="text" name='name' value={userInfo.name} placeholder="이름"
+          onChange={handleChange} /><br />  
+          <input type="file" accept="image/*" name='file' onChange={handleUpload} /><br />
         <button onClick={handleSubmit}>사용자 등록</button>
-        <button onClick={handleLogout}>로그아웃</button>
-      </form> <br /><br />
+      </form> <br />
+      <span> 계정이 있으신가요?</span>
+      <Link to='/signIn'>로그인</Link><br /><br />
         <button onClick={handleGithub}>깃허브 로그인</button>
-      {user && <p>accessToken={user.accessToken}</p>}
-      {user && <p>email={user.email}</p>}
-      {user && <p>uid={user.uid}</p>}
-      {user && user.displayName && <p>uid={user.displayName}</p>}
-      {user && user.photoURL && (
-        <img src={user.photoURL} alt={user.displayName} width={200} />
-      )}  
+  
     </div>
   )
 }
